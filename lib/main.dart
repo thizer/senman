@@ -35,7 +35,11 @@ class _MyHomePageState extends State<MyHomePage> {
   double iniY;
   double endY;
 
+  double iniScroll;
+
   Socket socket;
+
+  int counter = 0;
 
   @override
   void initState() {
@@ -43,7 +47,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
     Socket.connect('192.168.15.87', 1989).then((io) {
       this.socket = io;
-
       print(this.socket);
     });
   }
@@ -64,46 +67,67 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Column(
         children: <Widget>[
-          Expanded(child: GestureDetector(
-            child: Container(
+          Expanded(child: Container(
               color: Colors.grey,
-              child: Center(child: Container(
-                color: Colors.white,
-                width: MediaQuery.of(context).size.width-20,
-                height: (9*(MediaQuery.of(context).size.width-20))/16,
-              )),
+              child: Center(child: GestureDetector(
+                child: Container(
+                  color: Colors.white,
+                  width: MediaQuery.of(context).size.width-20,
+                  height: (9*(MediaQuery.of(context).size.width-20))/16,
+                ),
+                onPanStart: (details) {
+                  this.iniX = details.localPosition.dx;
+                  this.iniY = details.localPosition.dy;
+                },
+                // onPanEnd: (details) {
+                //   // Update the initial position
+                //   this.iniX = this.endX;
+                //   this.iniY = this.endY;
+                // },
+                onPanUpdate: (details) {
+                  counter++;
+                  if (counter%2 != 0) {
+                    return;
+                  }
+
+                  this.endX = details.localPosition.dx;
+                  this.endY = details.localPosition.dy;
+                  
+                  int theX = (this.sensitivity((this.iniX - this.endX)*-1)).round();
+                  int theY = (this.sensitivity(this.iniY - this.endY)).round();
+
+                  // Update the initial position
+                  //this.iniX = this.endX;
+                  //this.iniY = this.endY;
+
+                  String mouseX = '';
+                  String mouseY = '';
+
+                  if (theX < 0) {
+                    mouseX = 'mouseX='+theX.toString()+';';
+                  } else {
+                    mouseX = 'mouseX=+'+theX.toString()+';';
+                  }
+
+                  if (theY < 0) {
+                    mouseY = 'mouseY='+theY.toString()+';';
+                  } else {
+                    mouseY = 'mouseY=+'+theY.toString()+';';
+                  }
+
+                  this.socket.write(mouseX+mouseY);
+                },
+                onTap: () {
+                  this.socket.write('leftclick;');
+                },
+                onDoubleTap: () {
+                  this.socket.write('doubleclick;');
+                },
+                onLongPress: () {
+                  this.socket.write('rightclick;');
+                },
+              ),
             ),
-            onPanStart: (details) {
-              this.iniX = details.localPosition.dx;
-              this.iniY = details.localPosition.dy;
-            },
-            onPanUpdate: (details) {
-
-              this.endX = details.localPosition.dx;
-              this.endY = details.localPosition.dy;
-              
-            // },
-            // onPanEnd: (details) {
-              int theX = (this.sensitivity((this.iniX - this.endX)*-1, 40)).round();
-              int theY = (this.sensitivity(this.iniY - this.endY, 40)).round();
-
-              String mouseX = '';
-              String mouseY = '';
-
-              if (theX < 0) {
-                mouseX = 'mouseX='+theX.toString()+';';
-              } else {
-                mouseX = 'mouseX=+'+theX.toString()+';';
-              }
-
-              if (theY < 0) {
-                mouseY = 'mouseY='+theY.toString()+';';
-              } else {
-                mouseY = 'mouseY=+'+theY.toString()+';';
-              }
-
-              this.socket.write(mouseX+mouseY);
-            },
           )),
           Container(
             height: 100,
@@ -123,10 +147,26 @@ class _MyHomePageState extends State<MyHomePage> {
                   },
                 ),
                 SizedBox(width: 0.3),
-                Expanded(child: Container(
+                Expanded(child: GestureDetector(
+                  child: Container(
                     color: Colors.black45,
                   ),
-                ),
+                  onPanStart: (details) {
+                    this.iniScroll = details.localPosition.dy;
+                  },
+                  onPanUpdate: (details) {
+
+                    int scroll = (this.iniScroll - details.localPosition.dy).round();
+                    scroll = scroll~/2; // Divide por dois e transforma em int novamente
+
+                    if (scroll < 0) {
+                      this.socket.write('scroll='+scroll.toString()+';');
+                    } else {
+                      this.socket.write('scroll=+'+scroll.toString()+';');
+                    }
+
+                  },
+                )),
                 SizedBox(width: 0.3),
                 GestureDetector(
                   child: Container(

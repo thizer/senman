@@ -20,6 +20,8 @@ orig = (HOST, PORT)
 tcp.bind(orig)
 tcp.listen(1)
 
+print("Servidor iniciado: conecte-se em "+str(socket.gethostname())+' atrav\xc3s da porta '+str(PORT))
+
 while True:
     con, cliente = tcp.accept()
     print 'Concetado por', cliente
@@ -38,14 +40,12 @@ while True:
             # sys.exit()
             
         # Apenas um comando por vez
-        # cmd = re.sub(r';.+', '', msg)
-        # cmd = msg[:msg.index(';')]
         cmds = msg.split(';')
 
         newMouseX = None
         newMouseY = None
 
-        for cmd in cmds:
+        for cmd in cmds[0:2]:
 
             if (cmd == 'leftclick'):
                 gui.click()
@@ -59,6 +59,15 @@ while True:
                 gui.doubleClick()
                 continue
             
+            if (cmd.startswith('scroll=+')):
+                # SCROLL UP
+                gui.scroll(int(cmd[8:]))
+                continue
+            elif (cmd.startswith('scroll=-')):
+                # SCROLL DOWN
+                gui.scroll(int(cmd[8:])*-1)
+                continue
+
             if (cmd.startswith('mouseY=+')):
                 # UP
                 newMouseY = int(cmd[8:])*-1
@@ -75,19 +84,6 @@ while True:
                 # Right
                 newMouseX = int(cmd[8:])
                 
-        # Previne o mouse de sair da tela
-        # Isso nao funciona, essa prevencao deve ser feita depois
-        # do move(x, y)
-        # if (newMouseX < 0):
-        #     newMouseX = 0
-        # elif (newMouseX > screenWidth):
-        #     newMouseX = screenWidth
-
-        # if (newMouseY < 0):
-        #     newMouseY = 0
-        # elif (newMouseY > screenHeight):
-        #     newMouseY = screenHeight
-
         gui.move(newMouseX, newMouseY)
 
     print 'Finalizando conexao do cliente', cliente
