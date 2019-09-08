@@ -1,51 +1,60 @@
 import socket
 import pyautogui as gui
-# import sys
 import re
-
-# Captura tamanho da tela do servidor
-screenWidth, screenHeight = gui.size()
-mouseX, mouseY = gui.position()
-
-# Isso serve para impedir que o mouse saia para fora da tela
-gui.FAILSAFE = False
 
 # Params to create server
 HOST = ''              # Endereco IP do Servidor
-PORT = 1989            # Porta que o Servidor esta
-
-# Start server itself
-tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+PORT = 1987            # Porta que o Servidor esta
 orig = (HOST, PORT)
-tcp.bind(orig)
-tcp.listen(1)
 
-print("Servidor iniciado: conecte-se em "+str(socket.gethostname())+' atrav\xc3s da porta '+str(PORT))
-
-while True:
-    con, cliente = tcp.accept()
-    print 'Concetado por', cliente
+""" Start the server socket"""
+def main():
     
+    # Captura tamanho da tela do servidor
+    # screenWidth, screenHeight = gui.size()
+    # mouseX, mouseY = gui.position()
+
+    # Isso serve para impedir que o mouse saia para fora da tela
+    gui.FAILSAFE = False
+
+    # Start server itself
+    tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    tcp.bind(orig)
+    tcp.listen(1) # Aceita apenas um cliente por vez
+
+    print('Server up: connect over \''+socket.getfqdn()+':'+str(PORT)+'\'')
+
+    socketloop(tcp)
+
+"""Start the loop wainting for clients"""
+def socketloop(tcp):
+
+    itsplit = str.rsplit
+
     while True:
-
-        msg = con.recv(1024)
-        if not msg: break
+        con, cliente = tcp.accept()
+        print cliente[0], 'is among us'
         
-        if (msg == ''):
-            continue
+        ## Each message received from client {
+        while True:
 
-        if (msg == 'exit'):
-            con.close()
-            tcp.close()
-            # sys.exit()
+            msg = con.recv(1024)
+            if not msg: break
             
-        # Apenas um comando por vez
-        cmds = msg.split(';')
+            if (msg == ''):
+                continue
 
-        newMouseX = None
-        newMouseY = None
+            if (msg == 'exit'):
+                break
+                
+            # Apenas um comando por vez
+            cmds = itsplit(msg, ';')
+            cmd = cmds[len(cmds) - 2]
 
-        for cmd in cmds[0:2]:
+            print(cmd)
+
+            newMouseX = None
+            newMouseY = None
 
             if (cmd == 'leftclick'):
                 gui.click()
@@ -84,8 +93,16 @@ while True:
                 # Right
                 newMouseX = int(cmd[8:])
                 
-        gui.move(newMouseX, newMouseY)
+            gui.move(newMouseX, newMouseY)
 
-    print 'Finalizando conexao do cliente', cliente
-    con.close()
+        ## } End Each message received from client
 
+        print cliente[0], 'is gone'
+        con.close()
+        break
+
+    tcp.close()
+    exit
+
+""" Start application """
+main()
