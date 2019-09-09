@@ -85,16 +85,16 @@ class _MyHomePageState extends State<MyHomePage> {
                   int theX = (this.sensitivity((this.iniX - this.endX)*-1)).round();
                   int theY = (this.sensitivity(this.iniY - this.endY)).round();
 
-                  // Update the initial position
-                  // this.iniX = this.endX;
-                  // this.iniY = this.endY;
+                  if (theX == 0 && theY == 0) {
+                    return;
+                  }
 
                   String mouseX = 'mouseX=';
-                  mouseX += (theX > 0) ? '+' : '';
+                  mouseX += (!theX.isNegative) ? '+' : '';
                   mouseX += theX.toString();
 
                   String mouseY = 'mouseY=';
-                  mouseY += (theY > 0) ? '+' : '';
+                  mouseY += (!theY.isNegative) ? '+' : '';
                   mouseY += theY.toString();
 
                   this.socket.write(mouseX+'&'+mouseY+';');
@@ -139,9 +139,13 @@ class _MyHomePageState extends State<MyHomePage> {
                   onPanUpdate: (details) {
 
                     int scroll = (this.iniScroll - details.localPosition.dy).round();
-                    scroll = scroll~/2; // Divide por dois e transforma em int novamente
+                    scroll = scroll~/8; // Divide e transforma em int novamente
 
-                    if (scroll < 0) {
+                    if (scroll == 0) {
+                      return;
+                    }
+
+                    if (scroll.isNegative) {
                       this.socket.write('scroll='+scroll.toString()+';');
                     } else {
                       this.socket.write('scroll=+'+scroll.toString()+';');

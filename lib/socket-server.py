@@ -54,9 +54,11 @@ def socketloop(tcp):
             if (msg == 'exit'):
                 break
                 
+            print msg
+
             # Apenas um comando por vez
             cmds = itsplit(msg, ';')
-            cmd = cmds[len(cmds) - 2]
+            cmd = cmds[len(cmds) - 2] # Se houver uma lista de comandos, pegamos o ultimo
 
             if (cmd == 'leftclick'):
                 click()
@@ -90,8 +92,7 @@ def socketloop(tcp):
                 newMouseY = None
 
                 mouseX, mouseY = itsplit(cmd, '&')
-                # print mouseX, mouseY
-
+                
                 newMouseX, signalX = strtoint(itsplit(mouseX, '=')[1])
                 newMouseY, signalY = strtoint(itsplit(mouseY, '=')[1])
 
