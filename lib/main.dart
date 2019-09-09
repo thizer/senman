@@ -39,13 +39,11 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Socket socket;
 
-  int counter = 0;
-
   @override
   void initState() {
     super.initState();
 
-    Socket.connect('192.168.15.87', 1989).then((io) {
+    Socket.connect('192.168.15.87', 1987).then((io) {
       this.socket = io;
       print(this.socket);
     });
@@ -79,16 +77,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   this.iniX = details.localPosition.dx;
                   this.iniY = details.localPosition.dy;
                 },
-                // onPanEnd: (details) {
-                //   // Update the initial position
-                //   this.iniX = this.endX;
-                //   this.iniY = this.endY;
-                // },
                 onPanUpdate: (details) {
-                  counter++;
-                  if (counter%2 != 0) {
-                    return;
-                  }
 
                   this.endX = details.localPosition.dx;
                   this.endY = details.localPosition.dy;
@@ -97,35 +86,28 @@ class _MyHomePageState extends State<MyHomePage> {
                   int theY = (this.sensitivity(this.iniY - this.endY)).round();
 
                   // Update the initial position
-                  //this.iniX = this.endX;
-                  //this.iniY = this.endY;
+                  // this.iniX = this.endX;
+                  // this.iniY = this.endY;
 
-                  String mouseX = '';
-                  String mouseY = '';
+                  String mouseX = 'mouseX=';
+                  mouseX += (theX > 0) ? '+' : '';
+                  mouseX += theX.toString();
 
-                  if (theX < 0) {
-                    mouseX = 'mouseX='+theX.toString()+';';
-                  } else {
-                    mouseX = 'mouseX=+'+theX.toString()+';';
-                  }
+                  String mouseY = 'mouseY=';
+                  mouseY += (theY > 0) ? '+' : '';
+                  mouseY += theY.toString();
 
-                  if (theY < 0) {
-                    mouseY = 'mouseY='+theY.toString()+';';
-                  } else {
-                    mouseY = 'mouseY=+'+theY.toString()+';';
-                  }
-
-                  this.socket.write(mouseX+mouseY);
+                  this.socket.write(mouseX+'&'+mouseY+';');
                 },
-                onTap: () {
-                  this.socket.write('leftclick;');
-                },
-                onDoubleTap: () {
-                  this.socket.write('doubleclick;');
-                },
-                onLongPress: () {
-                  this.socket.write('rightclick;');
-                },
+                // onTap: () {
+                //   this.socket.write('leftclick;');
+                // },
+                // onDoubleTap: () {
+                //   this.socket.write('doubleclick;');
+                // },
+                // onLongPress: () {
+                //   this.socket.write('rightclick;');
+                // },
               ),
             ),
           )),

@@ -30,15 +30,22 @@ def main():
 def socketloop(tcp):
 
     itsplit = str.rsplit
+    
+    move = gui.move
+    click = gui.click
+    rightClick = gui.rightClick
+    doubleClick = gui.doubleClick
+    scroll = gui.scroll
 
     while True:
         con, cliente = tcp.accept()
+        recv = con.recv
         print cliente[0], 'is among us'
         
         ## Each message received from client {
         while True:
 
-            msg = con.recv(1024)
+            msg = recv(1024)
             if not msg: break
             
             if (msg == ''):
@@ -51,49 +58,48 @@ def socketloop(tcp):
             cmds = itsplit(msg, ';')
             cmd = cmds[len(cmds) - 2]
 
-            print(cmd)
-
-            newMouseX = None
-            newMouseY = None
-
             if (cmd == 'leftclick'):
-                gui.click()
+                click()
                 continue
 
             if (cmd == 'rightclick'):
-                gui.rightClick()
+                rightClick()
                 continue
 
             if (cmd == 'doubleclick'):
-                gui.doubleClick()
+                doubleClick()
                 continue
             
             if (cmd.startswith('scroll=+')):
                 # SCROLL UP
-                gui.scroll(int(cmd[8:]))
+                scroll(int(cmd[8:]))
                 continue
             elif (cmd.startswith('scroll=-')):
                 # SCROLL DOWN
-                gui.scroll(int(cmd[8:])*-1)
+                scroll(int(cmd[8:])*-1)
                 continue
 
-            if (cmd.startswith('mouseY=+')):
-                # UP
-                newMouseY = int(cmd[8:])*-1
+            if (cmd.find('mouse') != -1):
                 
-            elif (cmd.startswith('mouseY=-')):
-                # Down
-                newMouseY = int(cmd[8:])
-                
-            if (cmd.startswith('mouseX=-')):
-                # Left
-                newMouseX = int(cmd[8:])*-1
-                
-            elif (cmd.startswith('mouseX=+')):
-                # Right
-                newMouseX = int(cmd[8:])
-                
-            gui.move(newMouseX, newMouseY)
+                # X positive = RIGHT
+                # X negative = LEFT
+                # Y positive = UP
+                # Y negative = DOWN
+
+                newMouseX = None
+                newMouseY = None
+
+                mouseX, mouseY = itsplit(cmd, '&')
+                # print mouseX, mouseY
+
+                newMouseX, signalX = strtoint(itsplit(mouseX, '=')[1])
+                newMouseY, signalY = strtoint(itsplit(mouseY, '=')[1])
+
+                newMouseY *= -1
+
+                move(newMouseX, newMouseY)
+
+            ## } Endif mouse
 
         ## } End Each message received from client
 
@@ -104,5 +110,34 @@ def socketloop(tcp):
     tcp.close()
     exit
 
+############################
+##    Funcoes diversas    ##
+############################
+
+def strtoint(value):
+    result = 0
+
+    if (value == ''):
+        return result
+
+    resultRegex = re.sub(r'[^0-9]+', '', value)
+    if (resultRegex != ''):
+        result = int(resultRegex)
+
+    signal = '+'
+
+    if (value.find('-') != -1):
+        result *= -1
+        signal = '-'
+
+    return (result, signal)
+
+
+################################
+##    FIM Funcoes diversas    ##
+################################
+
+
 """ Start application """
 main()
+
