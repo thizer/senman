@@ -1,6 +1,7 @@
 import socket
 import pyautogui as gui
 import re
+import time, traceback
 
 # Params to create server
 HOST = ''              # Endereco IP do Servidor
@@ -37,9 +38,12 @@ def socketloop(tcp):
     doubleClick = gui.doubleClick
     scroll = gui.scroll
 
+    # Does not resolve because the system stuck here
+    # every(5, sendscreenshot, tcp)
+
     while True:
         con, cliente = tcp.accept()
-        recv = con.recv
+        recv = con.recv # performance tip
         print cliente[0], 'is among us'
         
         ## Each message received from client {
@@ -54,8 +58,6 @@ def socketloop(tcp):
             if (msg == 'exit'):
                 break
                 
-            print msg
-
             # Apenas um comando por vez
             cmds = itsplit(msg, ';')
             cmd = cmds[len(cmds) - 2] # Se houver uma lista de comandos, pegamos o ultimo
@@ -132,6 +134,23 @@ def strtoint(value):
         signal = '-'
 
     return (result, signal)
+
+def sendscreenshot(tcp):
+    print tcp
+
+""" Should run in paralel """
+def every(delay, task, param):
+  next_time = time.time() + delay
+  while True:
+    time.sleep(max(0, next_time - time.time()))
+    try:
+      task(param)
+    except Exception:
+      traceback.print_exc()
+      # in production code you might want to have this instead of course:
+      # logger.exception("Problem while executing repetitive task.")
+    # skip tasks if we are behind schedule:
+    next_time += (time.time() - next_time) // delay * delay + delay
 
 
 ################################

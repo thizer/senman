@@ -43,9 +43,18 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
 
+    this.socketConnect();
+  }
+
+  void socketConnect() {
+
     Socket.connect('192.168.15.87', 1987).then((io) {
       this.socket = io;
-      print(this.socket);
+      
+      this.socket.listen((event) {
+        print(event);
+      });
+      print('conectou miseravi');
     });
   }
 
@@ -59,6 +68,12 @@ class _MyHomePageState extends State<MyHomePage> {
             icon: Icon(Icons.close),
             onPressed: () {
               this.socket.close();
+            },
+          ),
+          IconButton(
+            icon: Icon(Icons.refresh),
+            onPressed: () {
+              socketConnect();
             },
           )
         ],
