@@ -2,6 +2,7 @@ import socket
 import pyautogui as gui
 import re
 import time, traceback
+import threading
 
 # Params to create server
 HOST = ''              # Endereco IP do Servidor
@@ -38,8 +39,8 @@ def socketloop(tcp):
     doubleClick = gui.doubleClick
     scroll = gui.scroll
 
-    # Does not resolve because the system stuck here
-    # every(5, sendscreenshot, tcp)
+    # Run 'sendscreenshot' function every 5 seconds
+    threading.Thread(target=lambda: every(5, sendscreenshot, tcp)).start()
 
     while True:
         con, cliente = tcp.accept()

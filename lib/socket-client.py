@@ -1,6 +1,6 @@
 import socket
 
-HOST = 'pernalonga.LooneyTunes'
+HOST = '127.0.0.1'
 PORT = 1987
 
 tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
